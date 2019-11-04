@@ -17,37 +17,29 @@ __NR_write is the number of the write() system call
   see x86_64-linux-gnu/asm/unistd_64.h
 */
 
-int fd_read_0 = 0;
-int fd_read_1 = 0;
-int fd_read_2 = 0;
+struct fd {
+   int fd_read;
+   int fd_write;
+};
 
-int fd_write_0 = 0;
-int fd_write_1 = 0;
-int fd_write_2 = 0;
+struct fd fds[50];
 
 int read_write(int fd, int read, int write)
 {
-	if(fd == 0)
-	{
-		fd_read_0 = fd_read_0 + read;
-		fd_write_0 = fd_write_0 + write;
-	}
-	else if(fd == 1)
-	{
-		fd_read_1 = fd_read_1 + read;
-		fd_write_1 = fd_write_1 + write;
-	}
-	else if(fd == 2)
-	{
-		fd_read_2 = fd_read_2 + read;
-		fd_write_2 = fd_write_2 + write;
-	}
+	fds[fd].fd_read += read;
+	fds[fd].fd_write += write;
 }
 
 int main(int argc, char **argv)
 {   
 	FILE *fptr;
 	fptr = fopen(argv[1],"w");
+
+	for(int i = 0; i < 50; i++)
+	{
+		fds[i].fd_read = 0;
+		fds[i].fd_write = 0;
+	}
 	
 	pid_t child;
     long orig_rax, rax;
@@ -156,9 +148,13 @@ int main(int argc, char **argv)
         }
     }
 	
-	fprintf(fptr,"file descriptor: 0 read volume: %d bytes write volume: %d bytes\n", fd_read_0,fd_write_0);
-	fprintf(fptr,"file descriptor: 1 read volume: %d bytes write volume: %d bytes\n", fd_read_1,fd_write_1);
-	fprintf(fptr,"file descriptor: 2 read volume: %d bytes write volume: %d bytes\n", fd_read_2,fd_write_2);
+	for(int i =0; i < 50; i++)
+	{
+		if((fds[i].fd_read != 0) || (fds[i].fd_write != 0))
+		{
+			fprintf(fptr,"file descriptor: %-5d, read volume: %-10d bytes,	write volume: %-10d bytes\n",i,fds[i].fd_read,fds[i].fd_write);
+		}
+	}
 	fclose(fptr);
     return 0;
 }
