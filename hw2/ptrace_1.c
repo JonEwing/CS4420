@@ -17,6 +17,31 @@
 #include <stdlib.h>
 #include <string.h>
 
+const int long_size = sizeof(long);
+void getdata(pid_t child, long addr, char *str, int len)
+{
+  char *laddr;
+  int i, j;
+  union u {
+    long val;
+    char chars[long_size];
+  } data;
+  i = 0;
+  j = len / long_size;
+  laddr = str;
+  while(i < j) {
+    data.val = ptrace(PTRACE_PEEKDATA, child, addr + i * 8, NULL);
+    memcpy(laddr, data.chars, long_size);
+    ++i;
+    laddr += long_size;
+  }
+  j = len % long_size;
+  if (j != 0) {
+    data.val = ptrace(PTRACE_PEEKDATA, child, addr + i * 8, NULL);
+    memcpy(laddr, data.chars, j);
+  }
+  str[len] = '\0';
+}
 
 struct fd {
    int fd_read;
@@ -79,9 +104,9 @@ int main(int argc, char **argv)
 					params[1] = ptrace(PTRACE_PEEKUSER,child, 8 * RSI,NULL);
 					params[2] = ptrace(PTRACE_PEEKUSER,child, 8 * RDX,NULL);
 					
-					//Data.val = Ptrace(PTRACE_PEEKDATA,child,params[1] + I *, NULL);
-
-					fprintf(fptr,"Write (%ld , %lx , %ld) --> ",params[0], params[1],params[2]);
+					char str[20];
+					getdata(child, params[1], str, 20);
+					fprintf(fptr,"Write (%ld , %s , %ld) --> ",params[0], str,params[2]);
 					read_write(params[0],0,params[2]);
 				}
 				else {
@@ -98,8 +123,10 @@ int main(int argc, char **argv)
 					params[0] = ptrace(PTRACE_PEEKUSER,child, 8 * RDI,NULL);
 					params[1] = ptrace(PTRACE_PEEKUSER,child, 8 * RSI,NULL);
 					params[2] = ptrace(PTRACE_PEEKUSER,child, 8 * RDX,NULL);
-								   
-					fprintf(fptr,"Read (%ld , %lx , %ld) --> ",params[0], params[1],params[2]);
+						
+					char str[20];
+					getdata(child, params[1], str, 20);
+					fprintf(fptr,"Read (%ld , %s , %ld) --> ",params[0], str,params[2]);
 					read_write(params[0],params[2],0);
 				}
 				else {
@@ -115,8 +142,10 @@ int main(int argc, char **argv)
 					insyscall = 1;
 					params[0] = ptrace(PTRACE_PEEKUSER,child, 8 * RDI,NULL);
 					params[1] = ptrace(PTRACE_PEEKUSER,child, 8 * RSI,NULL);
-								   
-					fprintf(fptr,"Open (%ls , %ld) --> ",params[0], params[1]);
+					
+					char str[20];
+					getdata(child, params[0], str, 20);					
+					fprintf(fptr,"Open (%s , %ld) --> ",str, params[1]);
 				}
 				else {
 					rax = ptrace(PTRACE_PEEKUSER,child, 8 * ORIG_RAX, NULL);
