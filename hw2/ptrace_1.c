@@ -3,6 +3,10 @@
    It was modified to run on a modern x86_64 processor (like pu1, pu2, pu3, etc.) 
 */
 
+// Jonathan Feige
+// CS4420_Ptrace_1
+// 11/04/19
+
 #include <sys/ptrace.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -12,13 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-/*
-__NR_write is the number of the write() system call
-  see x86_64-linux-gnu/asm/unistd_64.h
-*/
 
-
-//Data.val = Ptrace(PTRACE_PEEKDATA,child,addr+I *, NULL);
 
 struct fd {
    int fd_read;
@@ -35,6 +33,12 @@ int read_write(int fd, int read, int write)
 
 int main(int argc, char **argv)
 {   
+
+	if(argc < 3)
+	{
+		printf("Not enough arguments\n");
+		return -1;
+	}
 	FILE *fptr;
 	fptr = fopen(argv[1],"w");
 
@@ -74,7 +78,9 @@ int main(int argc, char **argv)
 					params[0] = ptrace(PTRACE_PEEKUSER,child, 8 * RDI,NULL);
 					params[1] = ptrace(PTRACE_PEEKUSER,child, 8 * RSI,NULL);
 					params[2] = ptrace(PTRACE_PEEKUSER,child, 8 * RDX,NULL);
-						
+					
+					//Data.val = Ptrace(PTRACE_PEEKDATA,child,params[1] + I *, NULL);
+
 					fprintf(fptr,"Write (%ld , %lx , %ld) --> ",params[0], params[1],params[2]);
 					read_write(params[0],0,params[2]);
 				}
@@ -151,6 +157,7 @@ int main(int argc, char **argv)
         }
     }
 	
+	fprintf(fptr,"\n");
 	for(int i =0; i < 50; i++)
 	{
 		if((fds[i].fd_read != 0) || (fds[i].fd_write != 0))
