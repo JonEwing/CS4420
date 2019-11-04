@@ -17,6 +17,9 @@ __NR_write is the number of the write() system call
   see x86_64-linux-gnu/asm/unistd_64.h
 */
 
+
+//Data.val = Ptrace(PTRACE_PEEKDATA,child,addr+I *, NULL);
+
 struct fd {
    int fd_read;
    int fd_write;
