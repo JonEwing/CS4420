@@ -1,0 +1,25 @@
+Open (4294967196, /etc/ld.so.cache , 140568380445736) --> 257
+
+Close (4) --> 3
+
+Open (4294967196, /lib/x86_64-linux-gn , 140568382578128) --> 257
+
+Read (4 ,  , 832) --> 0
+
+Close (4) --> 3
+
+Write (1 , Enter a value : , 15) --> 1
+
+Read (0 ,  , 4096) --> 0
+
+Write (1 , 
+nter a value : , 1) --> 1
+
+Write (1 , You entered: a: , 14) --> 1
+
+Exit (0)
+
+
+file descriptor: 0    , read volume: 4096       bytes,	write volume: 0          bytes
+file descriptor: 1    , read volume: 0          bytes,	write volume: 30         bytes
+file descriptor: 4    , read volume: 832        bytes,	write volume: 0          bytes

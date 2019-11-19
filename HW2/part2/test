@@ -1,0 +1,6 @@
+ls
+man man
+pwd
+ls -l -d
+uname -a
+./a.out < 186_stderr.txt
